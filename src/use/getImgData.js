@@ -39,7 +39,6 @@ export default function getImgData (img) {
             uploadImgData.src = reader.result
             uploadImgData.pic.src = reader.result
             openChoseImage.value = false
-            openOriginalImage.value = true
             isGameStart.value = false
         }
     }
@@ -50,7 +49,6 @@ export default function getImgData (img) {
         uploadImgData.src = e.target.src
         uploadImgData.pic.src = e.target.src
         openChoseImage.value = false
-        openOriginalImage.value = true
         isGameStart.value = false
     }
 

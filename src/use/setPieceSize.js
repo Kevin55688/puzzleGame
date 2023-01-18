@@ -16,10 +16,5 @@ export default function setPieceSize (uploadImgData,puzzle,col,row,padding,puzzl
     const originRatio = ((puzzle.value.offsetWidth - (container.value.offsetWidth * (PADDING * 0.01) * 2) - (PUZZLE_BORDER * 2) -2) / imgWidth)
     let CANVAS_WIDTH = (imgWidth * originRatio/ col )  - (PIECE_BORDER * 2)
     let CANVAS_HEIGHT = (imgHeight * originRatio / row)
-
-    console.log("puzzle.value.offsetWidth",puzzle.value.offsetWidth)
-    console.log("CANVAS_WIDTH" ,CANVAS_WIDTH)
-    console.log("container.value.offsetWidth * (PADDING * 0.01) * 2",container.value.offsetWidth * (PADDING * 0.01) * 2)
-    console.log("container.value.offsetWidth",container.value.offsetWidth)
     return {CANVAS_WIDTH , CANVAS_HEIGHT }
 } 

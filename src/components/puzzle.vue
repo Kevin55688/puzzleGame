@@ -26,6 +26,14 @@
                         <span>提示</span>  
                     </a>
                 </li>
+                <li @click="openHistory = true">
+                    <a href="#">
+                        <div class="icon">
+                            <ion-icon name="reader-outline"></ion-icon>
+                        </div>
+                        <span>歷史記錄</span>  
+                    </a>
+                </li>
                 <div class="indicator"></div>
             </ul>
         </nav>
@@ -41,16 +49,19 @@
             </div>
         </div>
 
+
+        <div  @click.self="openHistory = false" :class="['history' , {'openHistory' : openHistory}]">
+            <div class="historyList-container">
+                <div :class="['historyList' , {'Red' : index === historyList.length - 1}]" v-for="(time,index) in historyList" :key="index">{{ `Round${index + 1}: ${time}` }}</div>
+            </div>
+        </div>
+
+
         <div @click.self="openOriginalImage = false" :class="['OriginalImage' , {'openOriginalImage' : openOriginalImage}]">
             <div class="pic">
                 <img  ref="img"  v-if="uploadImgData.src" :src="uploadImgData.src" alt="">
             </div>        
         </div>
-
-
-
-
-
         <div :class="['config',{'isActive' :classVariable.config.isActive }]">
             請選擇拼圖片數
             <div class="setting">
@@ -112,16 +123,20 @@ export default {
             piece  : { border : "2px"},
             config : {isActive : true}
         })
+        let startTime = null
+        let historyList = ref([])
+        let openHistory = ref(false)
 
         //初始化畫面寬度(先繪制一張canvas以取得正確的畫面長寬)
         const initialize = () => {
             isGameStart.value = true
+            classVariable.config.isActive = false
+            startTime = Date.now()
             let {CANVAS_WIDTH , CANVAS_HEIGHT} = setPieceSize(uploadImgData, puzzle , setupPiece.colPiece,setupPiece.rowPiece,classVariable.puzzle.padding,classVariable.puzzle.border,classVariable.piece.border,container)
             getPuzzle(CANVAS_WIDTH, CANVAS_HEIGHT, canvasRef.value[0], uploadImgData,setupPiece.colPiece, setupPiece.rowPiece, pieceList.value[0].pieceID )
         }
         //創造拼圖
         const creatPuzzle = () => {
-            classVariable.config.isActive = false
             initialize() 
             let {CANVAS_WIDTH , CANVAS_HEIGHT} = setPieceSize(uploadImgData, puzzle , setupPiece.colPiece,setupPiece.rowPiece,classVariable.puzzle.padding,classVariable.puzzle.border,classVariable.piece.border,container)
             //遊戲開始
@@ -131,7 +146,8 @@ export default {
             getPuzzle(CANVAS_WIDTH, CANVAS_HEIGHT, canvasRef.value[i], uploadImgData,setupPiece.colPiece, setupPiece.rowPiece, pieceList.value[i].pieceID )
             }   
             // isGameComplete(count,pieceList)
-
+            let {isComplete} = isGameComplete(count,pieceList,startTime,historyList)
+            if (isComplete.value) openHistory.value = isComplete.value
         }
         
 
@@ -167,10 +183,12 @@ export default {
                 const temp = pieceList.value[ID1]
                 pieceList.value[ID1] = pieceList.value[ID2]
                 pieceList.value[ID2] = temp
-                // 確認拼圖是否完成
-                isGameComplete(count,pieceList)
                 // 清空changeTwoPiece
                 changeTwoPiece.length = 0
+                // 確認拼圖是否完成
+                let {isComplete} = isGameComplete(count,pieceList,startTime,historyList)
+                if (isComplete.value) openHistory.value = isComplete.value
+
             }
         })
 
@@ -239,8 +257,9 @@ export default {
             choseSampleImg,
             openOriginalImage,
             container,
-
-            
+            startTime,
+            historyList,
+            openHistory,
         }  
     },
     
@@ -296,6 +315,9 @@ export default {
                     &:hover:nth-child(3) ~ .indicator {
                         transform: translateX(70px * 2);
                     }
+                    &:hover:nth-child(4) ~ .indicator {
+                        transform: translateX(70px * 3);
+                    }
                     >a{
                         position: relative;
                         display: flex;
@@ -332,7 +354,8 @@ export default {
                     background-color: rgba(117, 139, 189 );
                     border-radius: 50%;
                     border: 6px solid $clr;
-                    left: 29px;
+                    // left: 29px;
+                    left: -6px;
                     top: -38px;
                     transition: .5s;
                     opacity: 0;
@@ -419,7 +442,49 @@ export default {
             }
         }
 
+        >.history{
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 9999;
+            display: flex;
+            visibility: hidden;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: 1s;
+            // overflow-y: auto;
+            &.openHistory{
+                visibility: visible;
+                opacity: 1;
+            }
 
+            >.historyList-container{
+                transition: 1s;
+                position: absolute;
+                width: 80%;
+                height: 80%;
+                border: solid 5px blue;
+                border-radius: 10px;
+                background-color: white;
+                box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+                overflow-y: auto;
+                >.historyList{
+                    font-family: 'Lobster', cursive;
+                    padding: 15px;
+                    list-style: none;
+                    color: black;
+                    font-size: 30px;
+                    &.Red{
+                        color: red;
+                    }
+                }
+            }
+
+        }
         >.OriginalImage{
             position: fixed;
             top: 0;
@@ -509,6 +574,7 @@ export default {
                 content : '';
                 position: absolute;
                 top: -15px;
+                left: 110px;
                 border-width: 6px 6px 10px 6px;
                 border-color: transparent transparent rgb(117, 139, 189) transparent;
                 border-style: solid;
